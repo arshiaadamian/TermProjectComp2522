@@ -1,4 +1,4 @@
-package MyCode.ca.bcit.comp2522.wordGame;
+package ca.bcit.comp2522.wordGame;
 
 /**
  * to be written ....
@@ -6,16 +6,15 @@ package MyCode.ca.bcit.comp2522.wordGame;
  * @author Arshia Adamian
  * @version 1.0
  */
-public class wordGameValidator
+public class CountryValidator
 {
 
     /**
-     * @param name name of the country.
+     * @param name            name of the country.
      * @param capitalCityName capital city of the country.
-     * @param fact1 fact number one about the country.
-     * @param fact2 fact number two about the country.
-     * @param fact3 fact number three about the country.
-     *
+     * @param fact1           fact number one about the country.
+     * @param fact2           fact number two about the country.
+     * @param fact3           fact number three about the country.
      * @throws IllegalArgumentException if value of any inputs is null or empty.
      */
     public static void validate(final String name,
