@@ -66,7 +66,8 @@ public class World
                 }
 
                 // Split first line: country:Capital
-                final String[] parts = line.split(":");
+                final String[] parts;
+                parts = line.split(":");
 
                 if (parts.length != NUMBER_OF_WORDS_IN_FIRST_LINE)
                 {
