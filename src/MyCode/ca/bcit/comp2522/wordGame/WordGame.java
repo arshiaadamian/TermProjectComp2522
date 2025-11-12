@@ -20,8 +20,6 @@ import java.util.Set;
  * (c) Print a fact    → ask for its country
  * - Two attempts per question; track per-game and cumulative totals
  * - When player stops, append cumulative totals to score.txt
- * <p>
- * Uses only core Java + Lecture 9 file APIs.
  *
  * @author Arshia Adamian
  * @version 1.0
@@ -62,19 +60,20 @@ public final class WordGame
      *
      * @throws IOException if data files cannot be read
      */
-    public WordGame() throws IOException
+    public WordGame(final Scanner sharedScanner)
+        throws IOException
     {
         Path dataDir;
-        dataDir = Paths.get("myResources/countries");
+        dataDir = Paths.get("src/myResources/countries");
 
         world        = new World(dataDir);
         countries    = world.getCountries();
         countryArray = toArray(countries);
 
-        scanner = new Scanner(System.in);
+        scanner = sharedScanner;
         random  = new Random();
 
-        scorePath = Paths.get("score.txt");
+        scorePath = Paths.get("src/myCode/score.txt");
 
         totalGamesPlayed   = 0;
         totalCorrectFirst  = 0;
@@ -142,7 +141,7 @@ public final class WordGame
             System.out.println();
         }
 
-        appendTotalsToScoreFile();
+        appendTotalsToScoreFile(scorePath);
         System.out.println("Thanks for playing! Totals were saved to score.txt");
     }
 
@@ -261,7 +260,8 @@ public final class WordGame
         }
     }
 
-    private void appendTotalsToScoreFile() throws IOException
+    private void appendTotalsToScoreFile(Path scorePath)
+        throws IOException
     {
         try (BufferedWriter writer = Files.newBufferedWriter(
             scorePath,

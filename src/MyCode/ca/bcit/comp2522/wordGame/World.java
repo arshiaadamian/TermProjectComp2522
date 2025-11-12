@@ -28,7 +28,8 @@ public class World
      * @param directory the folder containing a.txt ... z.txt
      * @throws IOException if any IO error occurs during loading
      */
-    public World(final Path directory) throws IOException
+    public World(final Path directory)
+        throws IOException
     {
         countries = new HashMap<>();
 
@@ -49,7 +50,8 @@ public class World
     /**
      * reads a single country file and adds country objects to the map.
      */
-    private void readFile(final Path filePath) throws IOException
+    private void readFile(final Path filePath)
+        throws IOException
     {
         try (BufferedReader reader = Files.newBufferedReader(filePath))
         {

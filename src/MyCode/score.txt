@@ -1,0 +1,5 @@
+- 1 word game played
+- 0 correct answers on the first attempt
+- 0 correct answers on the second attempt
+- 10 incorrect answers on two attempts each
+

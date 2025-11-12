@@ -51,7 +51,7 @@ public class Country
     public final String[] getFacts()
     {
         String[] factsCopy;
-        factsCopy = new String[]{facts[0], facts[1], facts[1]};
+        factsCopy = new String[]{facts[0], facts[1], facts[2]};
         return factsCopy;
     }
 
