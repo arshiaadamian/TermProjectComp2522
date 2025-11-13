@@ -11,49 +11,50 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Score model compatible with the provided JUnit tests.
- * One Score = results from (typically) one play session.
- * <p>
- * Expected text format (exactly as toString()):
- * Date and Time: 2025-11-12 10:25:30
- * Games Played: 1
- * Correct First Attempts: 6
- * Correct Second Attempts: 2
- * Incorrect Attempts: 1
- * Score: 14 points
- * <p>
- * (A trailing newline is included by toString()).
+ * Stores and manages the scoring information for a single Word Game session.
+ * A Score object records:
+ * - the date and time the session was played
+ * - how many games were played
+ * - how many answers were correct on the first attempt
+ * - how many answers were correct on the second attempt
+ * - how many answers were incorrect after two attempts
+ *
+ * The Score class is also responsible for writing score entries to a text file
+ * and reading them back in the exact format required by the JUnit tests.
+ *
+ * Author: Arshia Adamian
+ * Version: 1.0
  */
 public final class Score
 {
 
-    // ------------- formatter must match test -------------
     private static final DateTimeFormatter FORMATTER =
         DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-    // ------------- fields -------------
     private final LocalDateTime dateTimePlayed;
     private final int gamesPlayed;
     private final int correctFirst;
     private final int correctSecond;
     private final int incorrect;
 
-    // ------------- ctor -------------
+    /**
+     * Creates a Score object with the specified values.
+     *
+     * @param dateTimePlayed the date and time the score was recorded
+     * @param gamesPlayed the total number of games played
+     * @param correctFirst number of first-attempt correct answers
+     * @param correctSecond number of second-attempt correct answers
+     * @param incorrect number of incorrect answers
+     *
+     * @throws IllegalArgumentException if invalid.
+     */
     public Score(final LocalDateTime dateTimePlayed,
                  final int gamesPlayed,
                  final int correctFirst,
                  final int correctSecond,
                  final int incorrect)
     {
-
-        if (dateTimePlayed == null)
-        {
-            throw new IllegalArgumentException("dateTimePlayed cannot be null");
-        }
-        if (gamesPlayed < 0 || correctFirst < 0 || correctSecond < 0 || incorrect < 0)
-        {
-            throw new IllegalArgumentException("Counts cannot be negative");
-        }
+        validateScore(dateTimePlayed, gamesPlayed, correctFirst, correctSecond, incorrect);
 
         this.dateTimePlayed = dateTimePlayed;
         this.gamesPlayed    = gamesPlayed;
@@ -62,48 +63,82 @@ public final class Score
         this.incorrect      = incorrect;
     }
 
-    // ------------- accessors (only getScore is required by tests) -------------
+    /**
+     * Returns the date and time when this score was created.
+     *
+     * @return the session date and time
+     */
     public LocalDateTime getDateTimePlayed()
     {
         return dateTimePlayed;
     }
 
+    /**
+     * Returns how many games were played during this scoring session.
+     *
+     * @return number of games played
+     */
     public int getGamesPlayed()
     {
         return gamesPlayed;
     }
 
+    /**
+     * Returns how many first-attempt correct answers were recorded.
+     *
+     * @return number of first-attempt correct answers
+     */
     public int getCorrectFirst()
     {
         return correctFirst;
     }
 
+    /**
+     * Returns how many second-attempt correct answers were recorded.
+     *
+     * @return number of second-attempt correct answers
+     */
     public int getCorrectSecond()
     {
         return correctSecond;
     }
 
+    /**
+     * Returns how many answers were incorrect after two attempts.
+     *
+     * @return number of incorrect answers
+     */
     public int getIncorrect()
     {
         return incorrect;
     }
 
     /**
-     * Required by tests: total points = 2*first + 1*second.
+     * Calculates the final score for the session.
+     * First-attempt answers are worth 2 points.
+     * Second-attempt answers are worth 1 point.
+     * Incorrect answers are worth 0 points.
+     *
+     * @return total score for this session
      */
     public int getScore()
     {
         final int firstPoints;
         final int secondPoints;
+        final int totalPoints;
 
         firstPoints  = correctFirst * 2;
         secondPoints = correctSecond;
+        totalPoints = firstPoints + secondPoints;
 
-        return firstPoints + secondPoints;
+        return totalPoints;
     }
 
     /**
-     * Must match the exact string asserted in tests.
+     * Returns a string representation of the score in the exact format
+     * expected by the JUnit tests. Includes a trailing newline.
+     *
+     * @return formatted multi-line score entry
      */
     @Override
     public String toString()
@@ -121,10 +156,16 @@ public final class Score
         return sb.toString();
     }
 
-    // ------------- file I/O required by tests -------------
+
 
     /**
-     * Appends the score (via toString()) to the given file (path string).
+     * Appends this score entry to the specified file using the toString() format.
+     * If the file does not exist, it is created automatically.
+     *
+     * @param score the Score object to write
+     * @param filePath the file path to append to
+     *
+     * @throws IOException if invalid
      */
     public static void appendScoreToFile(final Score score,
                                          final String filePath) throws IOException
@@ -136,8 +177,15 @@ public final class Score
     }
 
     /**
-     * Reads all scores previously written with appendScoreToFile().
-     * Tolerant reader: looks for the 6 expected lines starting at a "Date and Time:" line.
+     * Reads all score entries from the specified file and converts them back
+     * into Score objects. Only entries following the exact output format
+     * produced by toString() are recognized.
+     *
+     * @param filePath path to the score file
+     *
+     * @return a list of Score objects read from the file
+     *
+     * @throws IOException if reading the file fails
      */
     public static List<Score> readScoresFromFile(final String filePath) throws IOException
     {
@@ -193,7 +241,17 @@ public final class Score
         return results;
     }
 
-    // ------------- tiny parsing helper -------------
+    /**
+     * Extracts the first integer value that appears after the given prefix.
+     * Used for reading values back from the text file.
+     *
+     * @param fullLine the complete line read from the file
+     * @param prefix the label expected at the start of the line
+     *
+     * @return the integer that follows the prefix
+     *
+     * @throws IllegalArgumentException if invalid
+     */
     private static int parseTrailingInt(final String fullLine,
                                         final String prefix)
     {
@@ -214,4 +272,36 @@ public final class Score
 
         return Integer.parseInt(numText);
     }
+
+    /**
+     * Validates all fields used to construct a Score object.
+     * Ensures that the date and time is not null and that all
+     * numeric values are zero or greater. If any value is invalid,
+     * this method throws an IllegalArgumentException.
+     *
+     * @param dateTimePlayed the date and time the score was recorded
+     * @param gamesPlayed total number of games played
+     * @param correctFirst number of first-attempt correct answers
+     * @param correctSecond number of second-attempt correct answers
+     * @param incorrect number of incorrect answers
+     *
+     * @throws IllegalArgumentException if the date is null or any count is negative
+     */
+    private static void validateScore(final LocalDateTime dateTimePlayed,
+                                      final int gamesPlayed,
+                                      final int correctFirst,
+                                      final int correctSecond,
+                                      final int incorrect)
+    {
+        if (dateTimePlayed == null)
+        {
+            throw new IllegalArgumentException("dateTimePlayed cannot be null");
+        }
+
+        if (gamesPlayed < 0 || correctFirst < 0 || correctSecond < 0 || incorrect < 0)
+        {
+            throw new IllegalArgumentException("Counts cannot be negative");
+        }
+    }
+
 }

@@ -1,7 +1,9 @@
 package ca.bcit.comp2522.wordGame;
 
 /**
- * to be written ....
+ * Provides input validation for creating Country objects.
+ * Ensures that the country name, capital city name, and all three
+ * fact strings are non-null and not blank before a Country is constructed.
  *
  * @author Arshia Adamian
  * @version 1.0
@@ -10,11 +12,16 @@ public class CountryValidator
 {
 
     /**
+     * Validates all fields required for constructing a Country object.
+     * Checks that none of the parameters are null or blank.
+     * If any value is invalid, this method throws an IllegalArgumentException.
+     *
      * @param name            name of the country.
      * @param capitalCityName capital city of the country.
      * @param fact1           fact number one about the country.
      * @param fact2           fact number two about the country.
      * @param fact3           fact number three about the country.
+     *
      * @throws IllegalArgumentException if value of any inputs is null or empty.
      */
     public static void validate(final String name,

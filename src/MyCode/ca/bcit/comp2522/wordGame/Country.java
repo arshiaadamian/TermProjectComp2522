@@ -1,7 +1,9 @@
 package ca.bcit.comp2522.wordGame;
 
 /**
- * to be written
+ * Represents a country used in the Word Game.
+ * Each Country object stores the country's name, its capital city,
+ * and facts about that country.
  *
  * @author Arshia Adamian
  * @version 1.0
@@ -38,20 +40,37 @@ public class Country
         facts[2]             = fact3;
     }
 
+    /**
+     * Returns the name of the country.
+     *
+     * @return the country's name
+     */
     public final String getName()
     {
         return name;
     }
 
+    /**
+     * Returns the capital city of the country.
+     *
+     * @return the country's capital city name
+     */
     public final String getCapitalCityName()
     {
         return capitalCityName;
     }
 
+    /**
+     * Returns a copy of the facts about the country.
+     * A new array is returned to preserve immutability.
+     *
+     * @return a defensive copy of the array containing three facts
+     */
     public final String[] getFacts()
     {
         String[] factsCopy;
         factsCopy = new String[]{facts[0], facts[1], facts[2]};
+        
         return factsCopy;
     }
 
