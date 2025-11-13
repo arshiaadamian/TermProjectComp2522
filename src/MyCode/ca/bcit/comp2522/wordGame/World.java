@@ -9,10 +9,20 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * to be written
+ * Loads and stores all Country objects used by the Word Game.
  *
- * @author Arshia Adamian
- * @version 1.0
+ * A World object reads every data file from 'a.txt' to 'z.txt'
+ * located in the directory provided to the constructor. Each file
+ * contains the name of a country, its capital, and three facts.
+ *
+ * Every Country created from these files is added to an internal map
+ * where the key is the country name and the value is the Country object.
+ *
+ * This class is responsible only for building and providing access
+ * to Country data. It does not perform gameplay logic.
+ *
+ * Author: Arshia Adamian
+ * Version: 1.0
  */
 public class World
 {
@@ -22,11 +32,19 @@ public class World
     private final Map<String, Country> countries;
 
     /**
-     * Builds the world by loading all country data files from the given directory.
-     * Example: dataDir = Paths.get("data") where files are data/a.txt ... data/z.txt
+     * Creates a World and loads all country data from the directory.
+     * Looks for files named 'a.txt' through 'z.txt'. Any missing files
+     * are simply skipped.
      *
-     * @param directory the folder containing a.txt ... z.txt
-     * @throws IOException if any IO error occurs during loading
+     * Each file is expected to store:
+     *   CountryName:CapitalCity
+     *   Fact 1
+     *   Fact 2
+     *   Fact 3
+     *
+     * @param directory the directory containing the country data files
+     *
+     * @throws IOException if any file cannot be read
      */
     public World(final Path directory)
         throws IOException
@@ -48,7 +66,16 @@ public class World
     }
 
     /**
-     * reads a single country file and adds country objects to the map.
+     * Reads a single data file and creates a Country object from it.
+     * Adds the Country to the internal map using the country's name
+     * as the key.
+     *
+     * The first line must contain a country name and capital city,
+     * separated by a colon. The next three lines are the country facts.
+     *
+     * @param filePath the path to the country data file
+     *
+     * @throws IOException if the file cannot be read
      */
     private void readFile(final Path filePath)
         throws IOException
@@ -105,9 +132,10 @@ public class World
     }
 
     /**
-     * Returns the map of countries.
+     * Returns the complete map of all loaded countries.
+     * The keys are country names, and the values are Country objects.
      *
-     * @return counties
+     * @return a map containing all countries in the World
      */
     public Map<String, Country> getCountries()
     {
@@ -115,7 +143,12 @@ public class World
     }
 
     /**
-     * Retrieves a single country by name.
+     * Retrieves a Country object by its name.
+     * Returns null if the country is not found.
+     *
+     * @param countryName the name of the country to retrieve
+     *
+     * @return the Country object, or null if no match exists
      */
     public Country getCountry(final String countryName)
     {

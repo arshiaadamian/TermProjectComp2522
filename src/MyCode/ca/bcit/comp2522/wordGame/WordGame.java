@@ -12,14 +12,12 @@ import java.util.Scanner;
 import java.util.Set;
 
 /**
- * Geography trivia game:
- * - 10 questions per game
- * - Randomly picks one of three question types:
- * (a) Print a capital → ask for its country
- * (b) Print a country → ask for its capital
- * (c) Print a fact    → ask for its country
- * - Two attempts per question; track per-game and cumulative totals
- * - When player stops, append cumulative totals to score.txt
+ * Runs the geography Word Game.
+ * The game asks the user questions about countries, capital cities,
+ * and facts. Each game consists of questions.
+ * The WordGame keeps track of per-game results and cumulative totals
+ * across all games in a session. When the player stops, the totals
+ * are appended to a score file.
  *
  * @author Arshia Adamian
  * @version 1.0
@@ -27,21 +25,21 @@ import java.util.Set;
 public final class WordGame
 {
 
-    // ---------------- constants (no magic numbers) ----------------
     private static final int QUESTIONS_PER_GAME = 10;
     private static final int FACTS_PER_COUNTRY = 3;
     private static final int MAX_ATTEMPTS = 2;
+    private static final int FIRST_TRY_POINTS = 2;
+    private static final int SECOND_TRY_POINTS = 1;
+    private static final int MISSED_ANSWER_POINTS = 0;
+    private static final int RANDOM_OFFSET = 1;
 
-    // Question type identifiers
     private static final int TYPE_CAPITAL_TO_COUNTRY = 1; // (a)
     private static final int TYPE_COUNTRY_TO_CAPITAL = 2; // (b)
     private static final int TYPE_FACT_TO_COUNTRY = 3; // (c)
 
-    // Attempt indices
     private static final int FIRST_ATTEMPT = 1;
     private static final int SECOND_ATTEMPT = 2;
 
-    // ---------------- data & utilities ----------------
     private final World world;
     private final Map<String, Country> countries;
     private final Country[] countryArray;
@@ -49,16 +47,20 @@ public final class WordGame
     private final Random random;
     private final Path scorePath;
 
-    // ---------------- cumulative totals across all games -----------
     private int totalGamesPlayed;
     private int totalCorrectFirst;
     private int totalCorrectSecond;
     private int totalIncorrectBoth;
 
     /**
-     * Constructs the game, loads country data from myResources/countries.
+     * Creates a new WordGame and loads all country data from the
+     * source files.
+     * Uses the provided Scanner for all user input so that the same
+     * Scanner can be shared with the Main menu.
      *
-     * @throws IOException if data files cannot be read
+     * @param sharedScanner the Scanner used to read user input
+     *
+     * @throws IOException if any of the country data files cannot be read
      */
     public WordGame(final Scanner sharedScanner)
         throws IOException
@@ -82,7 +84,12 @@ public final class WordGame
     }
 
     /**
-     * Runs 10-question games until user says No. Then appends totals to score.txt.
+     * Runs the main Word Game loop.
+     * Each game consists of questions. After each game,
+     * a summary is printed and the user is asked if they want
+     * to play again. If the user chooses not to play again,
+     * the cumulative totals for the session are written to the
+     * score file.
      *
      * @throws IOException if writing the score file fails
      */
@@ -105,12 +112,12 @@ public final class WordGame
             {
                 final int result;
                 result = askOneQuestion();
-                if (result == 2)
+                if (result == FIRST_TRY_POINTS)
                 {
                     // correct on first attempt
                     correctFirst++;
                 }
-                else if (result == 1)
+                else if (result == SECOND_TRY_POINTS)
                 {
                     // correct on second attempt
                     correctSecond++;
@@ -146,10 +153,15 @@ public final class WordGame
     }
 
     /**
-     * Asks one random question. Return codes:
-     * 2 = correct on first attempt
-     * 1 = correct on second attempt
-     * 0 = incorrect after two attempts
+     * Asks one random question about a country.
+     * The question type is chosen at random from:
+     * 1) capital to country, 2) country to capital, or 3) fact to country.
+     *
+     * The player has up to two attempts to answer correctly.
+     *
+     * @return 2 if the answer was correct on the first attempt,
+     *         1 if the answer was correct on the second attempt,
+     *         0 if both attempts were incorrect
      */
     private int askOneQuestion()
     {
@@ -158,7 +170,7 @@ public final class WordGame
 
         // Pick type in {1,2,3}
         final int qType;
-        qType = random.nextInt(3) + 1;
+        qType = random.nextInt(FACTS_PER_COUNTRY) + RANDOM_OFFSET;
 
         final String prompt;
         final String answer;
@@ -214,11 +226,11 @@ public final class WordGame
 
                 if (attempt == FIRST_ATTEMPT)
                 {
-                    return 2;
+                    return FIRST_TRY_POINTS;
                 }
                 else
                 {
-                    return 1;
+                    return SECOND_TRY_POINTS;
                 }
             }
 
@@ -232,11 +244,16 @@ public final class WordGame
 
         System.out.println("INCORRECT.");
         System.out.println("The correct answer was " + answer);
-        return 0;
+        return MISSED_ANSWER_POINTS;
     }
 
-    // ------------------ play-again & I/O helpers ------------------
-
+    /**
+     * Asks the user if they want to play another game.
+     * Repeats the prompt until the user enters "Yes" or "No"
+     * in any letter case.
+     *
+     * @return true if the user answers "Yes", false if the user answers "No", ignoring letter case
+     */
     private boolean askPlayAgain()
     {
         while (true)
@@ -260,6 +277,18 @@ public final class WordGame
         }
     }
 
+    /**
+     * Appends the cumulative totals for this session to the score file.
+     * Writes the number of games played and how many answers were correct
+     * on the first attempt, correct on the second attempt, and incorrect
+     * after two attempts.
+     *
+     * If the file does not exist, it is created.
+     *
+     * @param scorePath path to the score file to write to
+     *
+     * @throws IOException if there is an error writing to the file
+     */
     private void appendTotalsToScoreFile(Path scorePath)
         throws IOException
     {
@@ -291,8 +320,14 @@ public final class WordGame
     }
 
 
-    // ------------------ small utilities ------------------
-
+    /**
+     * Reads a line of input from the shared Scanner and trims
+     * leading and trailing whitespace.
+     *
+     * If the line is null, an empty string is returned.
+     *
+     * @return the trimmed line of user input, or an empty string if null
+     */
     private String readLineTrimmed()
     {
         final String line;
@@ -309,6 +344,11 @@ public final class WordGame
     }
 
 
+    /**
+     * Returns a random Country from the internal country array.
+     *
+     * @return a randomly selected Country
+     */
     private Country randomCountry()
     {
         final int idx;
@@ -319,6 +359,15 @@ public final class WordGame
         return countryArray[idx];
     }
 
+    /**
+     * Converts the map of country names and Country objects into
+     * an array of Country references. The order of countries in the
+     * resulting array depends on the iteration order of the map's keys.
+     *
+     * @param map the map of country names to Country objects
+     *
+     * @return an array containing all Country objects from the map
+     */
     private static Country[] toArray(final Map<String, Country> map)
     {
         final Country[] array;
